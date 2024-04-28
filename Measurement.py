@@ -89,6 +89,8 @@ def settings():
 
     points = ["Part 1", "Part 2", "Part 3", "Part 4", "Part 5", "Part 6", "Part 7", "Part 8", "Part 9", "Part 10"]
 
+
+
     def pointData():
         pass
 
@@ -96,29 +98,31 @@ def settings():
     dropdown.place(relx=0.0932, rely=0.21, anchor="center")
 
     new = CTkButton(settingsPage, text="New", command=None, height=35, width=150)
-    new.place(relx=0.31, rely=0.21, anchor="center")
+    new.place(relx=0.36, rely=0.21, anchor="center")
 
     edit = CTkButton(settingsPage, text="Edit", command=None, height=35, width=150)
-    edit.place(relx=0.44, rely=0.21, anchor="center")
+    edit.place(relx=0.49, rely=0.21, anchor="center")
 
     save = CTkButton(settingsPage, text="Save", command=None, height=35, width=150)
-    save.place(relx=0.57, rely=0.21, anchor="center")
+    save.place(relx=0.62, rely=0.21, anchor="center")
 
     delete = CTkButton(settingsPage, text="Delete", command=None, height=35, width=150)
-    delete.place(relx=0.7, rely=0.21, anchor="center")
+    delete.place(relx=0.75, rely=0.21, anchor="center")
 
-    my_image = CTkImage(light_image=Image.open("<path to light mode image>"),
-                                      dark_image=Image.open("<path to dark mode image>"),
-                                      size=(30, 30))
-
-    image_label = customtkinter.CTkLabel(app, image=my_image, text="")
+    capture = CTkButton(settingsPage, text="Capture", command=None, height=40, width = 200)
+    capture.place(relx=0.0932, rely=0.35, anchor="center")
 
     partTextBox1 = CTkTextbox(settingsPage, height=50, width=200)
-    partTextBox1.place(relx=0.0932, rely=0.35, anchor="center")
+    partTextBox1.place(relx=0.0932, rely=0.45, anchor="center")
     partTextBox2 = CTkTextbox(settingsPage, height=50, width=200)
-    partTextBox2.place(relx=0.0932, rely=0.45, anchor="center")
+    partTextBox2.place(relx=0.0932, rely=0.55, anchor="center")
     partTextBox3 = CTkTextbox(settingsPage, height=50, width=200)
-    partTextBox3.place(relx=0.0932, rely=0.55, anchor="center")
+    partTextBox3.place(relx=0.0932, rely=0.65, anchor="center")
+    partTextBox4 = CTkTextbox(settingsPage, height=50, width=200)
+    partTextBox4.place(relx=0.0932, rely=0.75, anchor="center")
+
+
+
 
 
 def data():
