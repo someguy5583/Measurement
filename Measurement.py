@@ -3,7 +3,7 @@ from customtkinter import CTkFrame
 from VideoCapture import VideoCapture
 from random import choice
 from tkinter import *
-import tkinter as tk
+from tkinter import ttk
 vca = VideoCapture()
 m_app: CTk = None
 is_running = False
@@ -122,39 +122,78 @@ def settings():
     ImageBox = CTkFrame(settingsPage, width=500, height=350)
     ImageBox.place(relx=0.5, rely=0.55, anchor="c")
 
-    def create_table(window, data):
-        num_rows = len(data)
-        num_cols = len(data[0])
+    # def create_table(window, data):
+    #     num_rows = len(data)
+    #     num_cols = len(data[0])
+    #
+    #     for i in range(num_rows):
+    #         for j in range(num_cols):
+    #             label = Label(window, text=data[i][j], borderwidth=1, relief="solid")
+    #             label.grid(row=i, column=j)
+    #
+    # # Example data for the table
+    # table_data = [
+    #     ["Points", "Spec", "Min", "Maxx "],
+    #     ["", "", "", ""],
+    #     ["", "", "", ""],
+    #     ["", "", "", ""],
+    #     ["", "", "", ""],
+    #     ["", "", "", ""],
+    #     ["", "", "", ""],
+    #     ["", "", "", ""],
+    #     ["", "", "", ""],
+    #     ["", "", "", ""],
+    #     ["", "", "", ""],
+    #     ["", "", "", ""],
+    #     ["", "", "", ""],
+    #     ["", "", "", ""]
+    # ]
+    #
+    # # Create a frame to contain the table
+    # table_frame = Frame(settingsPage)
+    # table_frame.place(relx=0.85, rely=0.5,anchor="center")
+    #
+    # # Create the table
+    # create_table(table_frame, table_data)
+    style = ttk.Style()
+    style.theme_use("clam")  # Use the "clam" theme to enable background color changes
+    style.configure("Treeview",
+                    background="#444",  # Darker background color
+                    fieldbackground="#444",  # Background color of the fields
+                    foreground="white",  # Font color
+                    font=("Arial", 10),  # Example font configuration
+                    borderwidth=1,  # Border width to separate cells
+                    relief="solid",  # Border style
+                    )
 
-        for i in range(num_rows):
-            for j in range(num_cols):
-                label = Label(window, text=data[i][j], borderwidth=1, relief="solid")
-                label.grid(row=i, column=j)
+    # Configure the Treeview to show grid lines
+    style.map("Treeview",
+              background=[('selected', '#D3D3D3')],  # Background color when selected
+              foreground=[('selected', 'black')],  # Text color when selected
+              )
 
-    # Example data for the table
-    table_data = [
-        ["Points", "Spec", "Min", "Maxx "],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""],   
-        ["", "", "", ""],
-        ["", "", "", ""],
-        ["", "", "", ""]
-    ]
+    # Create the Treeview widget
+    table = ttk.Treeview(settingsPage, columns=("Points", "Spec", "Min", "Max"), show = "headings")
+    table.heading('Points', text='Points')
+    table.heading('Spec', text='Spec')
+    table.heading('Min', text='Min')
+    table.heading('Max', text='Max')
 
-    # Create a frame to contain the table
-    table_frame = Frame(settingsPage)
-    table_frame.place(relx=0.85, rely=0.5,anchor="center")
+    # Set column widths
+    table.column("Points", width=75)
+    table.column("Spec", width=75)
+    table.column("Min", width=75)
+    table.column("Max", width=75)
 
-    # Create the table
-    create_table(table_frame, table_data)
+    # Insert some sample data
+    table.insert("", "end", values=("Data1", "Data2", "Data3", "Data4"))
+    table.insert("", "end", values=("Data5", "Data6", "Data7", "Data8"))
+
+    # Apply the style to the entire table
+    table.tag_configure("Treeview", background="#444444", foreground="white")
+
+    # Place the table on the settingsPage
+    table.place(relx=0.85, rely=0.55, anchor="center", height = 400)
 
 
 def data():
