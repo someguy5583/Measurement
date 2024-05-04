@@ -1,8 +1,9 @@
 from customtkinter import *
 from customtkinter import CTkFrame
 from VideoCapture import VideoCapture
+from random import choice
+from tkinter import *
 import tkinter as tk
-
 vca = VideoCapture()
 m_app: CTk = None
 is_running = False
@@ -68,7 +69,6 @@ def MeasurementClose():
 def test():
     pass
 
-
 def settings():
     global m_app
 
@@ -89,8 +89,6 @@ def settings():
 
     points = ["Part 1", "Part 2", "Part 3", "Part 4", "Part 5", "Part 6", "Part 7", "Part 8", "Part 9", "Part 10"]
 
-
-
     def pointData():
         pass
 
@@ -98,18 +96,18 @@ def settings():
     dropdown.place(relx=0.0932, rely=0.21, anchor="center")
 
     new = CTkButton(settingsPage, text="New", command=None, height=35, width=150)
-    new.place(relx=0.36, rely=0.21, anchor="center")
+    new.place(relx=0.3, rely=0.21, anchor="center")
 
     edit = CTkButton(settingsPage, text="Edit", command=None, height=35, width=150)
-    edit.place(relx=0.49, rely=0.21, anchor="center")
+    edit.place(relx=0.43, rely=0.21, anchor="center")
 
     save = CTkButton(settingsPage, text="Save", command=None, height=35, width=150)
-    save.place(relx=0.62, rely=0.21, anchor="center")
+    save.place(relx=0.56, rely=0.21, anchor="center")
 
     delete = CTkButton(settingsPage, text="Delete", command=None, height=35, width=150)
-    delete.place(relx=0.75, rely=0.21, anchor="center")
+    delete.place(relx=0.69, rely=0.21, anchor="center")
 
-    capture = CTkButton(settingsPage, text="Capture", command=None, height=40, width = 200)
+    capture = CTkButton(settingsPage, text="Capture", command=None, height=40, width=200)
     capture.place(relx=0.0932, rely=0.35, anchor="center")
 
     partTextBox1 = CTkTextbox(settingsPage, height=50, width=200)
@@ -121,9 +119,44 @@ def settings():
     partTextBox4 = CTkTextbox(settingsPage, height=50, width=200)
     partTextBox4.place(relx=0.0932, rely=0.75, anchor="center")
 
+    ImageBox = CTkFrame(settingsPage, width=500, height=350)
+    ImageBox.place(relx=0.5, rely=0.55, anchor="c")
 
+    def create_table(window, data):
+        num_rows = len(data)
+        num_cols = len(data[0])
 
+        for i in range(num_rows):
+            for j in range(num_cols):
+                label = Label(window, text=data[i][j], borderwidth=1, relief="solid")
+                label.grid(row=i, column=j)
+
+    # Example data for the table
+    table_data = [
+        ["Points", "Spec", "Min", "Maxx "],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""],   
+        ["", "", "", ""],
+        ["", "", "", ""],
+        ["", "", "", ""]
+    ]
+
+    # Create a frame to contain the table
+    table_frame = Frame(settingsPage)
+    table_frame.place(relx=0.85, rely=0.5,anchor="center")
+
+    # Create the table
+    create_table(table_frame, table_data)
 
 
 def data():
     pass
+
