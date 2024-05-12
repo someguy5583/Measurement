@@ -83,7 +83,5 @@ while True:
     app.update_idletasks()
     app.update()
 
-    print(Measurement.is_running)
-
     if Measurement.is_running:
         Measurement.MeasurementUpdate()

@@ -4,6 +4,17 @@ from VideoCapture import VideoCapture
 from random import choice
 from tkinter import *
 from tkinter import ttk
+import sqlite3
+
+connection = sqlite3.connect("pointsData.db")
+cursor = connection.cursor()
+command1 = """CREATE TABLE IF NOT EXISTS
+points(supplierName TEXT, vendorCode TEXT, partNumber INTEGER PRIMARY KEY, partName TEXT, lotCount INTEGER)"""
+
+cursor.execute(command1)
+
+
+
 vca = VideoCapture()
 m_app: CTk = None
 is_running = False
@@ -87,10 +98,15 @@ def settings():
     title.place(relx=0.5, rely=0.5, anchor="center")
     title.configure(font=('Verdana', 34))
 
-    points = ["Part 1", "Part 2", "Part 3", "Part 4", "Part 5", "Part 6", "Part 7", "Part 8", "Part 9", "Part 10"]
+    cursor.execute("""SELECT partNumber FROM points""")
+    points = ["Select P/N"]+[f"Part {x[0]}" for x in cursor.fetchall()]
+    print(points)
 
-    def pointData():
-        pass
+    def pointData(partNumber):
+        partNumber = int(partNumber[-1])
+        cursor.execute(f"""SELECT * FROM points WHERE partNumber={partNumber}""")
+
+
 
     dropdown = CTkComboBox(settingsPage, values=points, command=pointData, height=35, width=200, corner_radius=5, border_width=0, button_color="#4d94ff", button_hover_color="lightskyblue", dropdown_hover_color="#4d94ff", justify="center", dropdown_font=("Helvetica bold", 18))
     dropdown.place(relx=0.0932, rely=0.21, anchor="center")
@@ -101,60 +117,43 @@ def settings():
     edit = CTkButton(settingsPage, text="Edit", command=None, height=35, width=150)
     edit.place(relx=0.43, rely=0.21, anchor="center")
 
-    save = CTkButton(settingsPage, text="Save", command=None, height=35, width=150)
-    save.place(relx=0.56, rely=0.21, anchor="center")
-
     delete = CTkButton(settingsPage, text="Delete", command=None, height=35, width=150)
     delete.place(relx=0.69, rely=0.21, anchor="center")
 
     capture = CTkButton(settingsPage, text="Capture", command=None, height=40, width=200)
     capture.place(relx=0.0932, rely=0.35, anchor="center")
 
-    partTextBox1 = CTkTextbox(settingsPage, height=50, width=200)
-    partTextBox1.place(relx=0.0932, rely=0.45, anchor="center")
-    partTextBox2 = CTkTextbox(settingsPage, height=50, width=200)
-    partTextBox2.place(relx=0.0932, rely=0.55, anchor="center")
-    partTextBox3 = CTkTextbox(settingsPage, height=50, width=200)
-    partTextBox3.place(relx=0.0932, rely=0.65, anchor="center")
-    partTextBox4 = CTkTextbox(settingsPage, height=50, width=200)
-    partTextBox4.place(relx=0.0932, rely=0.75, anchor="center")
+    supplierNameLabel = CTkLabel(settingsPage, text="Supplier Name:", font=("Verdana", 11))
+    supplierNameLabel.place(relx=0.0182, rely=0.38)
+    supplierNameLabel.lower()
+    supplierNameTextBox = CTkTextbox(settingsPage, height=50, width=200)
+    supplierNameTextBox.place(relx=0.0932, rely=0.45, anchor="center")
+    vendorCodeLabel = CTkLabel(settingsPage, text="Vendor Code:", font=("Verdana", 11))
+    vendorCodeLabel.place(relx=0.0182, rely=0.48)
+    vendorCodeLabel.lower()
+    vendorCodeTextBox = CTkTextbox(settingsPage, height=50, width=200)
+    vendorCodeTextBox.place(relx=0.0932, rely=0.55, anchor="center")
+    partNumberLabel = CTkLabel(settingsPage, text="Part Number:", font=("Verdana", 11))
+    partNumberLabel.place(relx=0.0182, rely=0.58)
+    partNumberLabel.lower()
+    partNumberTextBox = CTkTextbox(settingsPage, height=50, width=200)
+    partNumberTextBox.place(relx=0.0932, rely=0.65, anchor="center")
+    partNameLabel = CTkLabel(settingsPage, text="Part Name:", font=("Verdana", 11))
+    partNameLabel.place(relx=0.0182, rely=0.68)
+    partNameLabel.lower()
+    partNameTextBox = CTkTextbox(settingsPage, height=50, width=200)
+    partNameTextBox.place(relx=0.0932, rely=0.75, anchor="center")
+    lotCountLabel = CTkLabel(settingsPage, text="Lot Count:", font=("Verdana", 11))
+    lotCountLabel.place(relx=0.0182, rely=0.78)
+    lotCountLabel.lower()
+    lotCountTextBox = CTkTextbox(settingsPage, height=50, width=200)
+    lotCountTextBox.place(relx=0.0932, rely=0.85, anchor="center")
+
+
 
     ImageBox = CTkFrame(settingsPage, width=500, height=350)
-    ImageBox.place(relx=0.5, rely=0.55, anchor="c")
+    ImageBox.place(relx=0.45, rely=0.55, anchor="c")
 
-    # def create_table(window, data):
-    #     num_rows = len(data)
-    #     num_cols = len(data[0])
-    #
-    #     for i in range(num_rows):
-    #         for j in range(num_cols):
-    #             label = Label(window, text=data[i][j], borderwidth=1, relief="solid")
-    #             label.grid(row=i, column=j)
-    #
-    # # Example data for the table
-    # table_data = [
-    #     ["Points", "Spec", "Min", "Maxx "],
-    #     ["", "", "", ""],
-    #     ["", "", "", ""],
-    #     ["", "", "", ""],
-    #     ["", "", "", ""],
-    #     ["", "", "", ""],
-    #     ["", "", "", ""],
-    #     ["", "", "", ""],
-    #     ["", "", "", ""],
-    #     ["", "", "", ""],
-    #     ["", "", "", ""],
-    #     ["", "", "", ""],
-    #     ["", "", "", ""],
-    #     ["", "", "", ""]
-    # ]
-    #
-    # # Create a frame to contain the table
-    # table_frame = Frame(settingsPage)
-    # table_frame.place(relx=0.85, rely=0.5,anchor="center")
-    #
-    # # Create the table
-    # create_table(table_frame, table_data)
     style = ttk.Style()
     style.theme_use("clam")  # Use the "clam" theme to enable background color changes
     style.configure("Treeview",
@@ -195,7 +194,27 @@ def settings():
     # Place the table on the settingsPage
     table.place(relx=0.85, rely=0.55, anchor="center", height = 400)
 
+    def saveData():
+        # Retrieve values from textboxes
+        supplier_name = supplierNameTextBox.get("1.0", "end")
+        vendor_code = vendorCodeTextBox.get("1.0", "end")
+        part_number = partNumberTextBox.get("1.0", "end")
+        part_name = partNameTextBox.get("1.0", "end")
+        lot_count = lotCountTextBox.get("1.0", "end")
 
+        # Execute SQL query to insert data into the database
+        cursor.execute(
+            "INSERT INTO points (supplierName, vendorCode, partNumber, partName, lotCount) VALUES (?, ?, ?, ?, ?)",
+            (supplier_name, vendor_code, part_number, part_name, lot_count))
+        connection.commit()  # Commit the transaction
+
+        # Optionally, you can fetch the inserted data for display or further processing
+        cursor.execute("SELECT * FROM points")
+        rows = cursor.fetchall()
+        print(rows)
+
+    save = CTkButton(settingsPage, text="Save", command=saveData, height=35, width=150)
+    save.place(relx=0.56, rely=0.21, anchor="center")
 def data():
     pass
 

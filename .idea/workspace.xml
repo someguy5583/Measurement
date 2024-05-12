@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f12ee255-3c7b-426b-96fa-434f5d005556" name="Changes" comment="Tried to make a table, looks ugly but it works">
+    <list default="true" id="f12ee255-3c7b-426b-96fa-434f5d005556" name="Changes" comment="Made the table look a lot better and the table is finished">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Measurement.py" beforeDir="false" afterPath="$PROJECT_DIR$/Measurement.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,6 +34,9 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/Measurement.py" root0="FORCE_HIGHLIGHTING" />
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 5
@@ -48,7 +52,8 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/r6awe/Desktop/Measurement2/Measurement/main.py&quot;
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/r6awe/Desktop/Measurement2/Measurement/main.py&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
 }</component>
   <component name="RunManager">
@@ -108,12 +113,21 @@
       <option name="project" value="LOCAL" />
       <updated>1714837729162</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Made the table look a lot better and the table is finished">
+      <option name="closed" value="true" />
+      <created>1714841204173</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1714841204173</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Tried to make a table, didnt work, so not much difference to the code." />
     <MESSAGE value="Tried to make a table, looks ugly but it works" />
-    <option name="LAST_COMMIT_MESSAGE" value="Tried to make a table, looks ugly but it works" />
+    <MESSAGE value="Made the table look a lot better and the table is finished" />
+    <option name="LAST_COMMIT_MESSAGE" value="Made the table look a lot better and the table is finished" />
   </component>
 </project>
