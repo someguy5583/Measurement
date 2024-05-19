@@ -5,12 +5,12 @@ from random import choice
 from tkinter import *
 from tkinter import ttk
 import sqlite3
+from tkinter import messagebox
 
 connection = sqlite3.connect("pointsData.db")
 cursor = connection.cursor()
 command1 = """CREATE TABLE IF NOT EXISTS
 points(supplierName TEXT, vendorCode TEXT, partNumber INTEGER PRIMARY KEY, partName TEXT, lotCount INTEGER)"""
-
 cursor.execute(command1)
 
 
@@ -54,20 +54,28 @@ def Measurement():
     frame.place(relx=0.1, rely=0.5, anchor="w")
 
     measurementHub.protocol("WM_DELETE_WINDOW", MeasurementClose)
-
+    print("like come")
     MeasurementUpdate()
 
 
 def MeasurementUpdate():
-    global vca, is_running
-    if not is_running:
-        return
-
+    global vca, frame
+    # Update the frame with the latest image from the video capture
     img = vca.update_frame()
-    label = CTkLabel(frame, image=img, text="")
-    label.image = img
-    label.place(relx=0.5, rely=0.5, anchor="center")
 
+    # Check if the parent widget exists and is valid
+    if frame.winfo_exists():
+        # Clear any existing widgets in the frame
+        print(frame)
+
+        # Create a new label widget with the updated image
+        label = CTkLabel(frame, image=img, text="")
+        label.image = img
+        label.place(relx=0.5, rely=0.5, anchor="center")
+
+
+def getFrame():
+    return frame
 
 
 def MeasurementClose():
@@ -81,9 +89,12 @@ def test():
     pass
 
 def settings():
-    global m_app
+    global m_app, vca, is_running, frame
 
     MeasurementClose()
+
+    vca = VideoCapture()
+    is_running = True
 
     settingsPage = CTkToplevel(m_app)
     settingsPage.title("Settings Page")
@@ -99,26 +110,37 @@ def settings():
     title.configure(font=('Verdana', 34))
 
     cursor.execute("""SELECT partNumber FROM points""")
-    points = ["Select P/N"]+[f"Part {x[0]}" for x in cursor.fetchall()]
+    partNumbers = [x[0] for x in cursor.fetchall()]
+    points = ["Select P/N"]+[f"Part {x}" for x in partNumbers]
     print(points)
 
     def pointData(partNumber):
+        if partNumber == "Select P/N":
+            supplierNameTextBox.delete(1.0, "end-1c")
+            vendorCodeTextBox.delete(1.0, "end-1c")
+            partNumberTextBox.delete(1.0, "end-1c")
+            partNameTextBox.delete(1.0, "end-1c")
+            lotCountTextBox.delete(1.0, "end-1c")
+            return
+
         partNumber = int(partNumber[-1])
         cursor.execute(f"""SELECT * FROM points WHERE partNumber={partNumber}""")
 
+        row = cursor.fetchall()
+        supplierNameTextBox.delete(1.0, "end-1c")
+        supplierNameTextBox.insert("end-1c", row[0][0])
+        vendorCodeTextBox.delete(1.0, "end-1c")
+        vendorCodeTextBox.insert("end-1c", row[0][1])
+        partNumberTextBox.delete(1.0, "end-1c")
+        partNumberTextBox.insert("end-1c", row[0][2])
+        partNameTextBox.delete(1.0, "end-1c")
+        partNameTextBox.insert("end-1c", row[0][3])
+        lotCountTextBox.delete(1.0, "end-1c")
+        lotCountTextBox.insert("end-1c", row[0][4])
 
 
     dropdown = CTkComboBox(settingsPage, values=points, command=pointData, height=35, width=200, corner_radius=5, border_width=0, button_color="#4d94ff", button_hover_color="lightskyblue", dropdown_hover_color="#4d94ff", justify="center", dropdown_font=("Helvetica bold", 18))
     dropdown.place(relx=0.0932, rely=0.21, anchor="center")
-
-    new = CTkButton(settingsPage, text="New", command=None, height=35, width=150)
-    new.place(relx=0.3, rely=0.21, anchor="center")
-
-    edit = CTkButton(settingsPage, text="Edit", command=None, height=35, width=150)
-    edit.place(relx=0.43, rely=0.21, anchor="center")
-
-    delete = CTkButton(settingsPage, text="Delete", command=None, height=35, width=150)
-    delete.place(relx=0.69, rely=0.21, anchor="center")
 
     capture = CTkButton(settingsPage, text="Capture", command=None, height=40, width=200)
     capture.place(relx=0.0932, rely=0.35, anchor="center")
@@ -149,10 +171,11 @@ def settings():
     lotCountTextBox = CTkTextbox(settingsPage, height=50, width=200)
     lotCountTextBox.place(relx=0.0932, rely=0.85, anchor="center")
 
-
-
     ImageBox = CTkFrame(settingsPage, width=500, height=350)
     ImageBox.place(relx=0.45, rely=0.55, anchor="c")
+    frame = ImageBox
+    print(frame)
+    MeasurementUpdate()
 
     style = ttk.Style()
     style.theme_use("clam")  # Use the "clam" theme to enable background color changes
@@ -196,25 +219,100 @@ def settings():
 
     def saveData():
         # Retrieve values from textboxes
-        supplier_name = supplierNameTextBox.get("1.0", "end")
-        vendor_code = vendorCodeTextBox.get("1.0", "end")
-        part_number = partNumberTextBox.get("1.0", "end")
-        part_name = partNameTextBox.get("1.0", "end")
-        lot_count = lotCountTextBox.get("1.0", "end")
+        supplier_name = supplierNameTextBox.get("1.0", "end").strip()
+        vendor_code = vendorCodeTextBox.get("1.0", "end").strip()
+        part_number = partNumberTextBox.get("1.0", "end").strip()
+        part_name = partNameTextBox.get("1.0", "end").strip()
+        lot_count = lotCountTextBox.get("1.0", "end").strip()
 
-        # Execute SQL query to insert data into the database
-        cursor.execute(
-            "INSERT INTO points (supplierName, vendorCode, partNumber, partName, lotCount) VALUES (?, ?, ?, ?, ?)",
-            (supplier_name, vendor_code, part_number, part_name, lot_count))
-        connection.commit()  # Commit the transaction
+        if not (supplier_name and vendor_code and part_number and part_name and lot_count):
+            # Ensure all fields are filled before saving
+            print("Please fill all fields before saving.")
+            return
+        saved = messagebox.askokcancel("Continue", f"Data saved successfully")
+        if saved:
+            try:
+                # Convert part_number to int
+                part_number = int(part_number)
+                # Check if part_number already exists in the database
+                cursor.execute("SELECT partNumber FROM points WHERE partNumber=?", (part_number,))
+                existing_part = cursor.fetchone()
+                if existing_part:
+                    # If part_number exists, update the record
+                    cursor.execute(
+                        "UPDATE points SET supplierName=?, vendorCode=?, partName=?, lotCount=? WHERE partNumber=?",
+                        (supplier_name, vendor_code, part_name, lot_count, part_number))
+                else:
+                    # If part_number doesn't exist, insert a new record
+                    cursor.execute(
+                        "INSERT INTO points (supplierName, vendorCode, partNumber, partName, lotCount) VALUES (?, ?, ?, ?, ?)",
+                        (supplier_name, vendor_code, part_number, part_name, lot_count))
 
-        # Optionally, you can fetch the inserted data for display or further processing
-        cursor.execute("SELECT * FROM points")
-        rows = cursor.fetchall()
-        print(rows)
+                # Commit the transaction
+                connection.commit()
+                print("Data saved successfully.")
+
+                # Update dropdown menu with new data
+                cursor.execute("""SELECT partNumber FROM points""")
+                partNumbers = [x[0] for x in cursor.fetchall()]
+                points = ["Select P/N"] + [f"{x}" for x in partNumbers]
+                dropdown.configure(values=points)  # Update dropdown values
+                supplierNameTextBox.delete(1.0, "end")
+                vendorCodeTextBox.delete(1.0, "end")
+                partNumberTextBox.delete(1.0, "end")
+                partNameTextBox.delete(1.0, "end")
+                lotCountTextBox.delete(1.0, "end")
+            except sqlite3.Error as e:
+                print("Error occurred while saving data:", e)
+
+    def deleteData():
+        # Get the selected part number from the dropdown menu
+        selected_part = dropdown.get()
+
+        # Ensure a valid part number is selected
+        if selected_part == "Select P/N":
+            print("Please select a valid part number.")
+            return
+
+        # Extract the part number from the selected option
+        part_number = int(selected_part.split(" ")[1])
+
+        # Ask for confirmation before deletion
+        confirm = messagebox.askyesno("Confirmation", f"Do you want to delete Part {part_number}?")
+
+        if confirm:
+            try:
+                # Execute the SQL DELETE statement to remove the record
+                cursor.execute("DELETE FROM points WHERE partNumber=?", (part_number,))
+
+                # Commit the transaction
+                connection.commit()
+                print("Data deleted successfully.")
+
+                # Update dropdown menu with updated data
+                cursor.execute("""SELECT partNumber FROM points""")
+                partNumbers = [x[0] for x in cursor.fetchall()]
+                points = ["Select P/N"] + [f"Part {x}" for x in partNumbers]
+                dropdown.configure(values=points)  # Update dropdown values
+
+                # Clear the text fields after successful deletion
+                supplierNameTextBox.delete(1.0, "end")
+                vendorCodeTextBox.delete(1.0, "end")
+                partNumberTextBox.delete(1.0, "end")
+                partNameTextBox.delete(1.0, "end")
+                lotCountTextBox.delete(1.0, "end")
+
+            except sqlite3.Error as e:
+                print("Error occurred while deleting data:", e)
+
+    # Inside the settings() function, after creating the delete button:
+    delete = CTkButton(settingsPage, text="Delete", command=deleteData, height=35, width=150)
+    delete.place(relx=0.515, rely=0.21, anchor="center")
 
     save = CTkButton(settingsPage, text="Save", command=saveData, height=35, width=150)
-    save.place(relx=0.56, rely=0.21, anchor="center")
+    save.place(relx=0.385, rely=0.21, anchor="center")
+
+
 def data():
     pass
 
