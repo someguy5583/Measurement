@@ -4,10 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f12ee255-3c7b-426b-96fa-434f5d005556" name="Changes" comment="Using database now, saving stuff is working, trying to make the saving from database real time.">
+    <list default="true" id="f12ee255-3c7b-426b-96fa-434f5d005556" name="Changes" comment="Saving in real time is working, made the video capture work, can delete data, save data, and even change existing data.">
+      <change afterPath="$PROJECT_DIR$/.gitmodules" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ext" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Measurement.py" beforeDir="false" afterPath="$PROJECT_DIR$/Measurement.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/VideoCapture.py" beforeDir="false" afterPath="$PROJECT_DIR$/VideoCapture.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,7 +131,15 @@
       <option name="project" value="LOCAL" />
       <updated>1715532951896</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Saving in real time is working, made the video capture work, can delete data, save data, and even change existing data.">
+      <option name="closed" value="true" />
+      <created>1716136552855</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1716136552855</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -137,6 +147,7 @@
     <MESSAGE value="Tried to make a table, looks ugly but it works" />
     <MESSAGE value="Made the table look a lot better and the table is finished" />
     <MESSAGE value="Using database now, saving stuff is working, trying to make the saving from database real time." />
-    <option name="LAST_COMMIT_MESSAGE" value="Using database now, saving stuff is working, trying to make the saving from database real time." />
+    <MESSAGE value="Saving in real time is working, made the video capture work, can delete data, save data, and even change existing data." />
+    <option name="LAST_COMMIT_MESSAGE" value="Saving in real time is working, made the video capture work, can delete data, save data, and even change existing data." />
   </component>
 </project>

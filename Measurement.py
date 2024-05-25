@@ -58,16 +58,16 @@ def Measurement():
     MeasurementUpdate()
 
 
-def MeasurementUpdate():
+def MeasurementUpdate(updateCallback=None):
     global vca, frame
     # Update the frame with the latest image from the video capture
-    img = vca.update_frame()
+    cv2img = vca.update_frame()
+    if updateCallback:
+        cv2img = updateCallback(cv2img)
+    img = vca.CV2CTk(cv2img)
 
     # Check if the parent widget exists and is valid
     if frame.winfo_exists():
-        # Clear any existing widgets in the frame
-        print(frame)
-
         # Create a new label widget with the updated image
         label = CTkLabel(frame, image=img, text="")
         label.image = img
@@ -87,6 +87,7 @@ def MeasurementClose():
 
 def test():
     pass
+
 
 def settings():
     global m_app, vca, is_running, frame
@@ -111,7 +112,7 @@ def settings():
 
     cursor.execute("""SELECT partNumber FROM points""")
     partNumbers = [x[0] for x in cursor.fetchall()]
-    points = ["Select P/N"]+[f"Part {x}" for x in partNumbers]
+    points = ["Select P/N"] + [f"Part {x}" for x in partNumbers]
     print(points)
 
     def pointData(partNumber):
@@ -123,7 +124,7 @@ def settings():
             lotCountTextBox.delete(1.0, "end-1c")
             return
 
-        partNumber = int(partNumber[-1])
+        partNumber = int(partNumber.split()[-1])
         cursor.execute(f"""SELECT * FROM points WHERE partNumber={partNumber}""")
 
         row = cursor.fetchall()
@@ -137,7 +138,6 @@ def settings():
         partNameTextBox.insert("end-1c", row[0][3])
         lotCountTextBox.delete(1.0, "end-1c")
         lotCountTextBox.insert("end-1c", row[0][4])
-
 
     dropdown = CTkComboBox(settingsPage, values=points, command=pointData, height=35, width=200, corner_radius=5, border_width=0, button_color="#4d94ff", button_hover_color="lightskyblue", dropdown_hover_color="#4d94ff", justify="center", dropdown_font=("Helvetica bold", 18))
     dropdown.place(relx=0.0932, rely=0.21, anchor="center")
@@ -172,50 +172,55 @@ def settings():
     lotCountTextBox.place(relx=0.0932, rely=0.85, anchor="center")
 
     ImageBox = CTkFrame(settingsPage, width=500, height=350)
-    ImageBox.place(relx=0.45, rely=0.55, anchor="c")
+    ImageBox.place(relx=0.45, rely=0.6, anchor="c")
     frame = ImageBox
     print(frame)
     MeasurementUpdate()
 
+    # Function to be called when the "button" is clicked
+    def on_button_click(event):
+        print("Canvas button clicked!")
+
+    # Create a Canvas widget to represent the button with a yellow square outline on a blue background
+    canvas_button = Canvas(settingsPage, width=50, height=50, bg="blue", highlightthickness=0)
+    canvas_button.create_rectangle(10, 10, 40, 40, outline="yellow", width=2)
+
+    # Bind the Canvas widget to the click event
+    canvas_button.bind("<Button-1>", on_button_click)
+
+    # Place the canvas above the ImageBox
+    canvas_button.place(relx=0.275, rely=0.3, anchor="center")
+
     style = ttk.Style()
-    style.theme_use("clam")  # Use the "clam" theme to enable background color changes
+    style.theme_use("clam")
     style.configure("Treeview",
-                    background="#444",  # Darker background color
-                    fieldbackground="#444",  # Background color of the fields
-                    foreground="white",  # Font color
-                    font=("Arial", 10),  # Example font configuration
-                    borderwidth=1,  # Border width to separate cells
-                    relief="solid",  # Border style
+                    background="#444",
+                    fieldbackground="#444",
+                    foreground="white",
+                    font=("Arial", 10),
+                    borderwidth=1,
+                    relief="solid",
                     )
 
-    # Configure the Treeview to show grid lines
     style.map("Treeview",
-              background=[('selected', '#D3D3D3')],  # Background color when selected
-              foreground=[('selected', 'black')],  # Text color when selected
+              background=[('selected', '#D3D3D3')],
+              foreground=[('selected', 'black')],
               )
 
-    # Create the Treeview widget
-    table = ttk.Treeview(settingsPage, columns=("Points", "Spec", "Min", "Max"), show = "headings")
+    table = ttk.Treeview(settingsPage, columns=("Points", "Spec", "Min", "Max"), show="headings")
     table.heading('Points', text='Points')
     table.heading('Spec', text='Spec')
     table.heading('Min', text='Min')
     table.heading('Max', text='Max')
 
-    # Set column widths
     table.column("Points", width=75)
     table.column("Spec", width=75)
     table.column("Min", width=75)
     table.column("Max", width=75)
 
-    # Insert some sample data
     table.insert("", "end", values=("Data1", "Data2", "Data3", "Data4"))
-    table.insert("", "end", values=("Data5", "Data6", "Data7", "Data8"))
 
-    # Apply the style to the entire table
-    table.tag_configure("Treeview", background="#444444", foreground="white")
-
-    # Place the table on the settingsPage
-    table.place(relx=0.85, rely=0.55, anchor="center", height = 400)
+    table.place(relx=0.85, rely=0.6, anchor="center", height = 400)
 
     def saveData():
         # Retrieve values from textboxes
@@ -229,7 +234,7 @@ def settings():
             # Ensure all fields are filled before saving
             print("Please fill all fields before saving.")
             return
-        saved = messagebox.askokcancel("Continue", f"Data saved successfully")
+        saved = messagebox.askokcancel("Continue", "Data saved successfully")
         if saved:
             try:
                 # Convert part_number to int
