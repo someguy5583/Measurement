@@ -1,25 +1,37 @@
+import colorsys
+
+import cv2
 from customtkinter import *
 from customtkinter import CTkFrame
+import random
 from VideoCapture import VideoCapture
 from random import choice
 from tkinter import *
 from tkinter import ttk
 import sqlite3
 from tkinter import messagebox
+from HandSafetyTool.Circle import Circle
+from HandSafetyTool.Rectangle import Rectangle
+from HandSafetyTool.Polygon import Polygon
 
+shapes = []
+was_down = False
+shape_index = 0
+isUpdatingShapes = False
+shapeId = 0
 connection = sqlite3.connect("pointsData.db")
 cursor = connection.cursor()
 command1 = """CREATE TABLE IF NOT EXISTS
 points(supplierName TEXT, vendorCode TEXT, partNumber INTEGER PRIMARY KEY, partName TEXT, lotCount INTEGER)"""
 cursor.execute(command1)
 
-
+drawCallback = None
 
 vca = VideoCapture()
 m_app: CTk = None
 is_running = False
 measurementHub: CTkToplevel = None
-frame: CTkFrame = None
+frame: CTkCanvas = None
 
 def Measurement():
     global vca, m_app, is_running, measurementHub, frame
@@ -50,7 +62,7 @@ def Measurement():
     vs.place(relx=0.125, rely=0.15, anchor="w")
     vs.configure(font=('Helvetica bold', 34))
 
-    frame = CTkFrame(master=measurementHub, width=500, height=350)
+    frame = CTkCanvas(master=measurementHub, width=500, height=350)
     frame.place(relx=0.1, rely=0.5, anchor="w")
 
     measurementHub.protocol("WM_DELETE_WINDOW", MeasurementClose)
@@ -58,20 +70,20 @@ def Measurement():
     MeasurementUpdate()
 
 
-def MeasurementUpdate(updateCallback=None):
+def MeasurementUpdate():
     global vca, frame
     # Update the frame with the latest image from the video capture
     cv2img = vca.update_frame()
-    if updateCallback:
-        cv2img = updateCallback(cv2img)
+    if drawCallback:
+        cv2img = drawCallback(cv2img)
     img = vca.CV2CTk(cv2img)
 
     # Check if the parent widget exists and is valid
     if frame.winfo_exists():
         # Create a new label widget with the updated image
-        label = CTkLabel(frame, image=img, text="")
-        label.image = img
-        label.place(relx=0.5, rely=0.5, anchor="center")
+        frame.delete("all")
+        frame.create_image(0, 0, anchor="nw", image=img)
+        frame.image = img  # Keep a reference to avoid garbage collection
 
 
 def getFrame():
@@ -90,7 +102,7 @@ def test():
 
 
 def settings():
-    global m_app, vca, is_running, frame
+    global m_app, vca, is_running, frame, drawCallback
 
     MeasurementClose()
 
@@ -115,6 +127,9 @@ def settings():
     points = ["Select P/N"] + [f"Part {x}" for x in partNumbers]
     print(points)
 
+    def Capture():
+        global is_running
+        is_running = False
     def pointData(partNumber):
         if partNumber == "Select P/N":
             supplierNameTextBox.delete(1.0, "end-1c")
@@ -142,7 +157,7 @@ def settings():
     dropdown = CTkComboBox(settingsPage, values=points, command=pointData, height=35, width=200, corner_radius=5, border_width=0, button_color="#4d94ff", button_hover_color="lightskyblue", dropdown_hover_color="#4d94ff", justify="center", dropdown_font=("Helvetica bold", 18))
     dropdown.place(relx=0.0932, rely=0.21, anchor="center")
 
-    capture = CTkButton(settingsPage, text="Capture", command=None, height=40, width=200)
+    capture = CTkButton(settingsPage, text="Capture", command=Capture, height=40, width=200)
     capture.place(relx=0.0932, rely=0.35, anchor="center")
 
     supplierNameLabel = CTkLabel(settingsPage, text="Supplier Name:", font=("Verdana", 11))
@@ -171,23 +186,65 @@ def settings():
     lotCountTextBox = CTkTextbox(settingsPage, height=50, width=200)
     lotCountTextBox.place(relx=0.0932, rely=0.85, anchor="center")
 
-    ImageBox = CTkFrame(settingsPage, width=500, height=350)
-    ImageBox.place(relx=0.45, rely=0.6, anchor="c")
-    frame = ImageBox
-    print(frame)
+    def onImageClick(event):
+        global isUpdatingShapes, was_down, shape_index
+        if not isUpdatingShapes:
+            return
+        x, y = event.x, event.y
+        positions = [[x, y], [x, y]]
+        color = colorsys.hsv_to_rgb(random.random(), random.random() * .5 + .5, 1)
+        color = (color[0] * 255, color[1] * 255, color[2] * 255)
+        shapes.append(Rectangle(positions, color))
+        shape_index = len(shapes) - 1
+        print(shape_index)
+        was_down = True
+    def onImageRelease(event):
+        global was_down
+        was_down = False
+
+    def onImageDrag(event):
+        global was_down, shape_index
+        if not was_down:
+            return
+        x, y = event.x, event.y
+        pos1 = shapes[shape_index].get_positions()[0]
+        positions = [pos1, [x, y]]
+        shapes[shape_index].set_positions(positions)
+
+    frame = CTkCanvas(settingsPage, width=500, height=350, bg="lightgray", highlightthickness=0)
+    frame.bind("<Button-1>", onImageClick)
+    frame.bind("<ButtonRelease-1>", onImageRelease)
+    frame.bind("<B1-Motion>", onImageDrag)
+
+    frame.place(relx=0.45, rely=0.6, anchor="c")
+
+    def renderShapes(frame):
+        global shapes, shape_index
+        print("disgusting")
+        for i in range(len(shapes)):
+            shapes[i].render(frame, 6, i, isUpdatingShapes)
+        return frame
+
     MeasurementUpdate()
+    drawCallback = renderShapes
+
 
     # Function to be called when the "button" is clicked
-    def on_button_click(event):
-        print("Canvas button clicked!")
-
+    def onRectangleButtonClick(event):
+        #get pointer position, drag pointer, get pointer position, make rectangle in those pointer positions
+        global isUpdatingShapes, shapeId
+        isUpdatingShapes = not isUpdatingShapes
+        shapeId = 0
+        if isUpdatingShapes:
+            canvas_button.configure(bg = "lightblue")
+        else:
+            canvas_button.configure(bg = "blue")
     # Create a Canvas widget to represent the button with a yellow square outline on a blue background
-    canvas_button = Canvas(settingsPage, width=50, height=50, bg="blue", highlightthickness=0)
+    canvas_button = CTkCanvas(settingsPage, width=50, height=50, bg="blue", highlightthickness=0)
     canvas_button.create_rectangle(10, 10, 40, 40, outline="yellow", width=2)
 
     # Bind the Canvas widget to the click event
-    canvas_button.bind("<Button-1>", on_button_click)
-
+    canvas_button.bind("<Button-1>", onRectangleButtonClick)
     # Place the canvas above the ImageBox
     canvas_button.place(relx=0.275, rely=0.3, anchor="center")
 

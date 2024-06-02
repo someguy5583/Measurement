@@ -4,17 +4,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f12ee255-3c7b-426b-96fa-434f5d005556" name="Changes" comment="Saving in real time is working, made the video capture work, can delete data, save data, and even change existing data.">
-      <change afterPath="$PROJECT_DIR$/.gitmodules" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ext" afterDir="false" />
+    <list default="true" id="f12ee255-3c7b-426b-96fa-434f5d005556" name="Changes" comment="Making a rectangle creation button, not sure if it is working or not, have to test, but for now there are no errors.">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Measurement.py" beforeDir="false" afterPath="$PROJECT_DIR$/Measurement.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VideoCapture.py" beforeDir="false" afterPath="$PROJECT_DIR$/VideoCapture.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ext" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -58,6 +64,12 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\r6awe\Desktop\Measurement2\Measurement\ext" />
+      <recent name="C:\Users\r6awe\Desktop\Measurement2\Measurement\ext\ext" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python">
       <module name="Measurement" />
@@ -139,7 +151,15 @@
       <option name="project" value="LOCAL" />
       <updated>1716136552855</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Making a rectangle creation button, not sure if it is working or not, have to test, but for now there are no errors.">
+      <option name="closed" value="true" />
+      <created>1716655581598</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1716655581598</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -148,6 +168,7 @@
     <MESSAGE value="Made the table look a lot better and the table is finished" />
     <MESSAGE value="Using database now, saving stuff is working, trying to make the saving from database real time." />
     <MESSAGE value="Saving in real time is working, made the video capture work, can delete data, save data, and even change existing data." />
-    <option name="LAST_COMMIT_MESSAGE" value="Saving in real time is working, made the video capture work, can delete data, save data, and even change existing data." />
+    <MESSAGE value="Making a rectangle creation button, not sure if it is working or not, have to test, but for now there are no errors." />
+    <option name="LAST_COMMIT_MESSAGE" value="Making a rectangle creation button, not sure if it is working or not, have to test, but for now there are no errors." />
   </component>
 </project>
