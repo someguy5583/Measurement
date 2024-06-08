@@ -15,10 +15,14 @@ from HandSafetyTool.Rectangle import Rectangle
 from HandSafetyTool.Polygon import Polygon
 
 shapes = []
+creating_poly = False
 was_down = False
 shape_index = 0
 isUpdatingShapes = False
-shapeId = 0
+shape_type = 0
+freeze_frame = None
+frozen = False
+
 connection = sqlite3.connect("pointsData.db")
 cursor = connection.cursor()
 command1 = """CREATE TABLE IF NOT EXISTS
@@ -34,7 +38,7 @@ measurementHub: CTkToplevel = None
 frame: CTkCanvas = None
 
 def Measurement():
-    global vca, m_app, is_running, measurementHub, frame
+    global vca, m_app, is_running, measurementHub, frame, drawCallback
     is_running = True
 
     measurementHub = CTkToplevel(m_app)
@@ -67,13 +71,18 @@ def Measurement():
 
     measurementHub.protocol("WM_DELETE_WINDOW", MeasurementClose)
     print("like come")
+
+    drawCallback = None
     MeasurementUpdate()
 
 
 def MeasurementUpdate():
-    global vca, frame
+    global vca, frame, freeze_frame, frozen
     # Update the frame with the latest image from the video capture
     cv2img = vca.update_frame()
+    if frozen:
+        cv2img = freeze_frame.copy()
+
     if drawCallback:
         cv2img = drawCallback(cv2img)
     img = vca.CV2CTk(cv2img)
@@ -128,8 +137,9 @@ def settings():
     print(points)
 
     def Capture():
-        global is_running
-        is_running = False
+        global freeze_frame, frozen
+        freeze_frame = vca.update_frame()
+        frozen = True
     def pointData(partNumber):
         if partNumber == "Select P/N":
             supplierNameTextBox.delete(1.0, "end-1c")
@@ -187,16 +197,29 @@ def settings():
     lotCountTextBox.place(relx=0.0932, rely=0.85, anchor="center")
 
     def onImageClick(event):
-        global isUpdatingShapes, was_down, shape_index
+        global isUpdatingShapes, was_down, shape_index, shape_type, creating_poly
         if not isUpdatingShapes:
             return
         x, y = event.x, event.y
         positions = [[x, y], [x, y]]
         color = colorsys.hsv_to_rgb(random.random(), random.random() * .5 + .5, 1)
         color = (color[0] * 255, color[1] * 255, color[2] * 255)
-        shapes.append(Rectangle(positions, color))
-        shape_index = len(shapes) - 1
-        print(shape_index)
+
+        if shape_type == 0:
+            shapes.append(Rectangle(positions, color))
+            table.insert("", "end", values=(f'Rect_{len(shapes)}', "", "", ""))
+        elif shape_type == 1:
+            shapes.append(Circle(positions, color))
+            table.insert("", "end", values=(f'Circ_{len(shapes)}', "", "", ""))
+        elif shape_type == 3:
+            shapes.append(Polygon(positions, color))
+            table.insert("", "end", values=(f'Line_{len(shapes)}', "", "", ""))
+
+        if creating_poly:
+            shapes[shape_index].add_position([x, y])
+        else:
+            shape_index = len(shapes) - 1
+
         was_down = True
     def onImageRelease(event):
         global was_down
@@ -207,8 +230,8 @@ def settings():
         if not was_down:
             return
         x, y = event.x, event.y
-        pos1 = shapes[shape_index].get_positions()[0]
-        positions = [pos1, [x, y]]
+        positions = shapes[shape_index].get_positions()
+        positions = positions[:-1]+[[x, y]]
         shapes[shape_index].set_positions(positions)
 
     frame = CTkCanvas(settingsPage, width=500, height=350, bg="lightgray", highlightthickness=0)
@@ -220,33 +243,148 @@ def settings():
 
     def renderShapes(frame):
         global shapes, shape_index
-        print("disgusting")
         for i in range(len(shapes)):
-            shapes[i].render(frame, 6, i, isUpdatingShapes)
+            shapes[i].render(frame, 2, i, isUpdatingShapes)
         return frame
 
     MeasurementUpdate()
     drawCallback = renderShapes
 
+    def onCircleButtonClick(event):
+        global isUpdatingShapes, shape_type
+        global creating_poly
+        creating_poly = False
+        if shape_type == 1:
+            isUpdatingShapes = not isUpdatingShapes
+        else:
+            isUpdatingShapes = True
+        shape_type = 1
+        if isUpdatingShapes:
+            circle_button.configure(bg="lightblue")
+            rectangle_button.configure(bg="blue")
+            polygon_button.configure(bg="blue")
+            line_button.configure(bg="blue")
+        else:
+            circle_button.configure(bg="blue")
+            rectangle_button.configure(bg="blue")
+            polygon_button.configure(bg="blue")
+            line_button.configure(bg="blue")
+
+    # Create a Canvas widget to represent the button with a yellow circle outline on a blue background
+    circle_button = CTkCanvas(settingsPage, width=50, height=50, bg="blue", highlightthickness=0)
+    circle_button.create_oval(10, 10, 40, 40, outline="yellow", width=2)
+
+    # Bind the Canvas widget to the click event
+    circle_button.bind("<Button-1>", onCircleButtonClick)
+
+    # Place the circle_button to the right of the existing canvas_button
+    circle_button.place(relx=0.325, rely=0.3, anchor="center")
 
     # Function to be called when the "button" is clicked
     def onRectangleButtonClick(event):
-        #get pointer position, drag pointer, get pointer position, make rectangle in those pointer positions
-        global isUpdatingShapes, shapeId
-        isUpdatingShapes = not isUpdatingShapes
-        shapeId = 0
-        if isUpdatingShapes:
-            canvas_button.configure(bg = "lightblue")
+        global creating_poly
+        creating_poly = False
+        global isUpdatingShapes, shape_type
+        if shape_type == 0:
+            isUpdatingShapes = not isUpdatingShapes
         else:
-            canvas_button.configure(bg = "blue")
+            isUpdatingShapes = True
+        shape_type = 0
+        if isUpdatingShapes:
+            circle_button.configure(bg="blue")
+            rectangle_button.configure(bg="lightblue")
+            polygon_button.configure(bg="blue")
+            line_button.configure(bg="blue")
+        else:
+            circle_button.configure(bg="blue")
+            rectangle_button.configure(bg="blue")
+            polygon_button.configure(bg="blue")
+            line_button.configure(bg="blue")
     # Create a Canvas widget to represent the button with a yellow square outline on a blue background
-    canvas_button = CTkCanvas(settingsPage, width=50, height=50, bg="blue", highlightthickness=0)
-    canvas_button.create_rectangle(10, 10, 40, 40, outline="yellow", width=2)
+    rectangle_button = CTkCanvas(settingsPage, width=50, height=50, bg="blue", highlightthickness=0)
+    rectangle_button.create_rectangle(10, 10, 40, 40, outline="yellow", width=2)
 
     # Bind the Canvas widget to the click event
-    canvas_button.bind("<Button-1>", onRectangleButtonClick)
+    rectangle_button.bind("<Button-1>", onRectangleButtonClick)
     # Place the canvas above the ImageBox
-    canvas_button.place(relx=0.275, rely=0.3, anchor="center")
+    rectangle_button.place(relx=0.275, rely=0.3, anchor="center")
+
+    fixed_polygon_points = [(15, 15), (35, 15), (45, 35), (25, 45), (5, 35)]
+
+    # Function to be called when the "button" is clicked
+    def onPolygonButtonClick(event):
+        global isUpdatingShapes, shape_type, shape_index, creating_poly
+        creating_poly = True
+        if shape_type == 2:
+            isUpdatingShapes = not isUpdatingShapes
+        else:
+            isUpdatingShapes = True
+        shape_type = 2
+        if len(shapes) != 0 and len(shapes[shape_index].positions) == 0:
+            shapes.pop(shape_index)
+        color = colorsys.hsv_to_rgb(random.random(), random.random() * .5 + .5, 1)
+        color = (color[0] * 255, color[1] * 255, color[2] * 255)
+        shapes.append(Polygon([], color))
+        table.insert("", "end", values=(f'Poly_{len(shapes)}', "", "", ""))
+        shape_index = len(shapes) - 1
+        if isUpdatingShapes:
+            circle_button.configure(bg="blue")
+            rectangle_button.configure(bg="blue")
+            polygon_button.configure(bg="lightblue")
+            line_button.configure(bg="blue")
+        else:
+            circle_button.configure(bg="blue")
+            rectangle_button.configure(bg="blue")
+            polygon_button.configure(bg="blue")
+            line_button.configure(bg="blue")
+
+    # Create a Canvas widget to represent the button with a yellow polygon outline on a blue background
+    polygon_button = CTkCanvas(settingsPage, width=50, height=50, bg="blue", highlightthickness=0)
+    polygon_button.create_polygon(fixed_polygon_points, outline="yellow", width=2, fill="")
+
+    # Bind the Canvas widget to the click event
+    polygon_button.bind("<Button-1>", onPolygonButtonClick)
+
+    # Place the polygon_button to the right of the existing circle_button
+    polygon_button.place(relx=0.275 + 0.05 * 2, rely=0.3, anchor="center")
+
+    def onLineButtonClick(event):
+        global isUpdatingShapes, shape_type, shape_index
+        global creating_poly
+        creating_poly = False
+        if shape_type == 3:
+            isUpdatingShapes = not isUpdatingShapes
+        else:
+            isUpdatingShapes = True
+        shape_type = 3
+        if isUpdatingShapes:
+            circle_button.configure(bg="blue")
+            rectangle_button.configure(bg="blue")
+            polygon_button.configure(bg="blue")
+            line_button.configure(bg="lightblue")
+        else:
+            circle_button.configure(bg="blue")
+            rectangle_button.configure(bg="blue")
+            polygon_button.configure(bg="blue")
+            line_button.configure(bg="blue")
+
+    # Create a Canvas widget to represent the button with a gray line and arrows on both sides
+    line_button = CTkCanvas(settingsPage, width=150, height=50, bg="blue", highlightthickness=0)
+
+    # Draw the line
+    line_button.create_line(10, 25, 140, 25, fill="yellow", width=2)
+
+    # Draw the left arrow
+    line_button.create_polygon(10, 25, 20, 20, 20, 30, fill="yellow", outline="yellow")
+
+    # Draw the right arrow
+    line_button.create_polygon(140, 25, 130, 20, 130, 30, fill="yellow", outline="yellow")
+
+    # Bind the Canvas widget to the click event
+    line_button.bind("<Button-1>", onLineButtonClick)
+
+    # Place the line_button to the right of the existing polygon_button
+    line_button.place(relx=0.275 + 0.05 * 3.75, rely=0.3, anchor="center")
 
     style = ttk.Style()
     style.theme_use("clam")
@@ -260,7 +398,7 @@ def settings():
                     )
 
     style.map("Treeview",
-              background=[('selected', '#D3D3D3')],
+              background=[('selected', '#FF00FF'), ('', '#00FF00')],
               foreground=[('selected', 'black')],
               )
 
@@ -275,7 +413,6 @@ def settings():
     table.column("Min", width=75)
     table.column("Max", width=75)
 
-    table.insert("", "end", values=("Data1", "Data2", "Data3", "Data4"))
 
     table.place(relx=0.85, rely=0.6, anchor="center", height = 400)
 
