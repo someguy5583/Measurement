@@ -6,17 +6,17 @@ from PIL import Image, ImageTk
 class VideoCapture():
     def __init__(self):
         # Create a VideoCapture object
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(1)
 
     def update_frame(self):
         ret, frame = self.cap.read()
+        frame = cv2.flip(frame, 1)
         if ret:
             return frame
         return None
 
     def CV2CTk(self, frame):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = cv2.flip(frame, 1)
         # Convert the frame to PIL image
         img = Image.fromarray(frame)
 

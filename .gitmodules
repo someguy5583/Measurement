@@ -1,3 +1,6 @@
 [submodule "ext"]
 	path = ext
 	url = https://github.com/someguy5583/HandDetectionSafetyTool.git
+[submodule "HandSafetyTool"]
+	path = HandSafetyTool
+	url = https://github.com/someguy5583/HandDetectionSafetyTool.git
