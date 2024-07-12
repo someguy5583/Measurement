@@ -4,11 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f12ee255-3c7b-426b-96fa-434f5d005556" name="Changes" comment="Working on making the rectangles still draw even after pressing capture button, have to make 3 more functional drawing buttons.">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+    <list default="true" id="f12ee255-3c7b-426b-96fa-434f5d005556" name="Changes" comment="made all of the drawing buttons">
+      <change afterPath="$PROJECT_DIR$/EntryPopup.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/HandSafetyTool/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/logo.jpeg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HandSafetyTool" beforeDir="false" afterPath="$PROJECT_DIR$/HandSafetyTool" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HandSafetyTool/Circle.py" beforeDir="false" afterPath="$PROJECT_DIR$/HandSafetyTool/Circle.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HandSafetyTool/MultipleShapes.py" beforeDir="false" afterPath="$PROJECT_DIR$/HandSafetyTool/MultipleShapes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HandSafetyTool/Polygon.py" beforeDir="false" afterPath="$PROJECT_DIR$/HandSafetyTool/Polygon.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HandSafetyTool/Rectangle.py" beforeDir="false" afterPath="$PROJECT_DIR$/HandSafetyTool/Rectangle.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Measurement.py" beforeDir="false" afterPath="$PROJECT_DIR$/Measurement.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ext" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/VideoCapture.py" beforeDir="false" afterPath="$PROJECT_DIR$/VideoCapture.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,12 +67,16 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/r6awe/Desktop/Measurement2/Measurement/main.py&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/r6awe/Desktop/Measurement2/Measurement/HandSafetyTool&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.fonts.default&quot;
   }
 }</component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\r6awe\Desktop\Measurement2\Measurement\HandSafetyTool" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\r6awe\Desktop\Measurement2\Measurement" />
       <recent name="C:\Users\r6awe\Desktop\Measurement2\Measurement\ext" />
       <recent name="C:\Users\r6awe\Desktop\Measurement2\Measurement\ext\ext" />
     </key>
@@ -175,8 +186,27 @@
       <option name="project" value="LOCAL" />
       <updated>1717860873064</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="made all of the drawing buttons">
+      <option name="closed" value="true" />
+      <created>1717861318821</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1717861318821</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Tried to make a table, didnt work, so not much difference to the code." />
@@ -186,6 +216,7 @@
     <MESSAGE value="Saving in real time is working, made the video capture work, can delete data, save data, and even change existing data." />
     <MESSAGE value="Making a rectangle creation button, not sure if it is working or not, have to test, but for now there are no errors." />
     <MESSAGE value="Working on making the rectangles still draw even after pressing capture button, have to make 3 more functional drawing buttons." />
-    <option name="LAST_COMMIT_MESSAGE" value="Working on making the rectangles still draw even after pressing capture button, have to make 3 more functional drawing buttons." />
+    <MESSAGE value="made all of the drawing buttons" />
+    <option name="LAST_COMMIT_MESSAGE" value="made all of the drawing buttons" />
   </component>
 </project>

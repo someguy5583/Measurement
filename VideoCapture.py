@@ -3,10 +3,11 @@ import cv2
 from PIL import Image, ImageTk
 
 
+
 class VideoCapture():
     def __init__(self):
         # Create a VideoCapture object
-        self.cap = cv2.VideoCapture(1)
+        self.cap = cv2.VideoCapture(2)
 
     def update_frame(self):
         ret, frame = self.cap.read()

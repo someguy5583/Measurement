@@ -1,4 +1,5 @@
 import colorsys
+from EntryPopup import EntryPopup
 
 import cv2
 from customtkinter import *
@@ -13,6 +14,7 @@ from tkinter import messagebox
 from HandSafetyTool.Circle import Circle
 from HandSafetyTool.Rectangle import Rectangle
 from HandSafetyTool.Polygon import Polygon
+import math
 
 shapes = []
 creating_poly = False
@@ -26,8 +28,11 @@ frozen = False
 connection = sqlite3.connect("pointsData.db")
 cursor = connection.cursor()
 command1 = """CREATE TABLE IF NOT EXISTS
-points(supplierName TEXT, vendorCode TEXT, partNumber INTEGER PRIMARY KEY, partName TEXT, lotCount INTEGER)"""
+points(supplierName TEXT, vendorCode TEXT, part_number INTEGER PRIMARY KEY, partName TEXT, lotCount INTEGER)"""
 cursor.execute(command1)
+command2 = """CREATE TABLE IF NOT EXISTS
+shapes(idx INTEGER PRIMARY KEY, spec INTEGER, min INTEGER, max INTEGER, shape TEXT, shape_index INTEGER, part_number INTEGER, FOREIGN KEY(part_number) REFERENCES points(part_number))"""
+cursor.execute(command2)
 
 drawCallback = None
 
@@ -50,7 +55,7 @@ def Measurement():
     measurementHub.after(1, lambda: measurementHub.focus_force())
 
     ## ---- UI ---- ##
-    btn1 = CTkButton(measurementHub, text="TEST", command=None, corner_radius=15, height=90, width=300)
+    btn1 = CTkButton(measurementHub, text="TEST", command=test, corner_radius=15, height=90, width=300)
     btn1.place(relx=0.75, rely=0.25, anchor="center")
 
     btn3 = CTkButton(measurementHub, text="SETTINGS", command=settings, corner_radius=15, height=100,width=300)
@@ -107,7 +112,24 @@ def MeasurementClose():
     measurementHub.destroy()
 
 def test():
-    pass
+    global m_app, vca, is_running, frame, drawCallback
+
+    MeasurementClose()
+
+    vca = VideoCapture()
+    is_running = True
+
+    testPage = CTkToplevel(m_app)
+    testPage.title("Testing Page")
+    testPage.geometry("1280x720")
+
+    testPage.after(1, lambda: testPage.focus_force())
+    testPage.after(201, lambda: testPage.iconbitmap('logo.jpeg'))
+
+    dropdown = CTkComboBox(testPage, values=None, command=None, height=35, width=200, corner_radius=5,
+                           border_width=0, button_color="#4d94ff", button_hover_color="lightskyblue",
+                           dropdown_hover_color="#4d94ff", justify="center", dropdown_font=("Helvetica bold", 18))
+    dropdown.place(relx=0.0075, rely=0.01, anchor="nw")
 
 
 def settings():
@@ -131,26 +153,40 @@ def settings():
     title.place(relx=0.5, rely=0.5, anchor="center")
     title.configure(font=('Verdana', 34))
 
-    cursor.execute("""SELECT partNumber FROM points""")
+    cursor.execute("""SELECT part_number FROM points""")
     partNumbers = [x[0] for x in cursor.fetchall()]
     points = ["Select P/N"] + [f"Part {x}" for x in partNumbers]
     print(points)
 
     def Capture():
-        global freeze_frame, frozen
+        global freeze_frame, frozen, partNumber
         freeze_frame = vca.update_frame()
+        partNumber = 0
+        try:
+            partNumber = int(partNumberTextBox.get('1.0', 'end').strip())
+        except:
+            return
         frozen = True
+        cv2.imwrite(f"image{partNumber}.jpeg", freeze_frame)
     def pointData(partNumber):
+        global shapes, freeze_frame, frozen
         if partNumber == "Select P/N":
             supplierNameTextBox.delete(1.0, "end-1c")
             vendorCodeTextBox.delete(1.0, "end-1c")
             partNumberTextBox.delete(1.0, "end-1c")
             partNameTextBox.delete(1.0, "end-1c")
             lotCountTextBox.delete(1.0, "end-1c")
+
+            frozen = False
+            freeze_frame = None
+
+            for i in range(len(shapes)):
+                shapes.pop()
+                popRow()
             return
 
         partNumber = int(partNumber.split()[-1])
-        cursor.execute(f"""SELECT * FROM points WHERE partNumber={partNumber}""")
+        cursor.execute(f"""SELECT * FROM points WHERE part_number={partNumber}""")
 
         row = cursor.fetchall()
         supplierNameTextBox.delete(1.0, "end-1c")
@@ -163,6 +199,31 @@ def settings():
         partNameTextBox.insert("end-1c", row[0][3])
         lotCountTextBox.delete(1.0, "end-1c")
         lotCountTextBox.insert("end-1c", row[0][4])
+
+        cursor.execute(f"SELECT * FROM shapes WHERE part_number={partNumber}")
+        rows = cursor.fetchall()
+        shapesstr = [shape[4] for shape in rows]
+        shapes = []
+
+        for i in range(len(rows)):
+            color = colorsys.hsv_to_rgb(random.random(), random.random() * .5 + .5, 1)
+            color = (color[0] * 255, color[1] * 255, color[2] * 255)
+
+            sus = shapesstr[i].split('|')
+            if sus[0] == "Rect":
+                shapes.append(Rectangle(Rectangle.read(sus[1]), color))
+                print(shapes[-1])
+            elif sus[0] == "Circle":
+                shapes.append(Circle(Circle.read(sus[1]), color))
+            else:
+                shapes.append(Polygon(Polygon.read(sus[1]), color))
+            addRow(-1, rows[i][1], rows[i][2], rows[i][3])
+
+        freeze_frame = cv2.imread(f"image{partNumber}.jpeg")
+        if freeze_frame is not None:
+            frozen = True
+        else:
+            frozen = False
 
     dropdown = CTkComboBox(settingsPage, values=points, command=pointData, height=35, width=200, corner_radius=5, border_width=0, button_color="#4d94ff", button_hover_color="lightskyblue", dropdown_hover_color="#4d94ff", justify="center", dropdown_font=("Helvetica bold", 18))
     dropdown.place(relx=0.0932, rely=0.21, anchor="center")
@@ -207,23 +268,29 @@ def settings():
 
         if shape_type == 0:
             shapes.append(Rectangle(positions, color))
-            table.insert("", "end", values=(f'Rect_{len(shapes)}', "", "", ""))
         elif shape_type == 1:
             shapes.append(Circle(positions, color))
-            table.insert("", "end", values=(f'Circ_{len(shapes)}', "", "", ""))
+        elif shape_type == 2:
+            if creating_poly:
+                if len(shapes) != 0 and len(shapes[shape_index].positions) == 0:
+                    shapes.pop(shape_index)
+                color = colorsys.hsv_to_rgb(random.random(), random.random() * .5 + .5, 1)
+                color = (color[0] * 255, color[1] * 255, color[2] * 255)
+                shapes.append(Polygon([[x, y]], color))
+                creating_poly = False
+            else:
+                shapes[shape_index].add_position([x, y])
         elif shape_type == 3:
-            shapes.append(Polygon(positions, color))
-            table.insert("", "end", values=(f'Line_{len(shapes)}', "", "", ""))
+            shapes.append(Polygon(positions, color, name="Line"))
 
-        if creating_poly:
-            shapes[shape_index].add_position([x, y])
-        else:
-            shape_index = len(shapes) - 1
+        shape_index = len(shapes) - 1
 
         was_down = True
     def onImageRelease(event):
-        global was_down
+        global was_down, isUpdatingShapes
         was_down = False
+        if isUpdatingShapes:
+            addRow(shape_index)
 
     def onImageDrag(event):
         global was_down, shape_index
@@ -251,6 +318,9 @@ def settings():
     drawCallback = renderShapes
 
     def onCircleButtonClick(event):
+        if not frozen:
+            return
+
         global isUpdatingShapes, shape_type
         global creating_poly
         creating_poly = False
@@ -282,6 +352,9 @@ def settings():
 
     # Function to be called when the "button" is clicked
     def onRectangleButtonClick(event):
+        if not frozen:
+            return
+
         global creating_poly
         creating_poly = False
         global isUpdatingShapes, shape_type
@@ -313,6 +386,9 @@ def settings():
 
     # Function to be called when the "button" is clicked
     def onPolygonButtonClick(event):
+        if not frozen:
+            return
+
         global isUpdatingShapes, shape_type, shape_index, creating_poly
         creating_poly = True
         if shape_type == 2:
@@ -320,13 +396,6 @@ def settings():
         else:
             isUpdatingShapes = True
         shape_type = 2
-        if len(shapes) != 0 and len(shapes[shape_index].positions) == 0:
-            shapes.pop(shape_index)
-        color = colorsys.hsv_to_rgb(random.random(), random.random() * .5 + .5, 1)
-        color = (color[0] * 255, color[1] * 255, color[2] * 255)
-        shapes.append(Polygon([], color))
-        table.insert("", "end", values=(f'Poly_{len(shapes)}', "", "", ""))
-        shape_index = len(shapes) - 1
         if isUpdatingShapes:
             circle_button.configure(bg="blue")
             rectangle_button.configure(bg="blue")
@@ -349,6 +418,9 @@ def settings():
     polygon_button.place(relx=0.275 + 0.05 * 2, rely=0.3, anchor="center")
 
     def onLineButtonClick(event):
+        if not frozen:
+            return
+
         global isUpdatingShapes, shape_type, shape_index
         global creating_poly
         creating_poly = False
@@ -386,6 +458,18 @@ def settings():
     # Place the line_button to the right of the existing polygon_button
     line_button.place(relx=0.275 + 0.05 * 3.75, rely=0.3, anchor="center")
 
+    def undoShape():
+        global shapes, shape_index, creating_poly
+        shapes.pop()
+        shape_index = len(shapes)-1
+        if shape_type == 2:
+            creating_poly = True
+        popRow()
+
+
+    undoButton = CTkButton(settingsPage, text="Undo", command=undoShape, height=50, width=150)
+    undoButton.place(relx=0.275 + 0.1 * 3.1, rely=0.3, anchor="center")
+
     style = ttk.Style()
     style.theme_use("clam")
     style.configure("Treeview",
@@ -402,6 +486,36 @@ def settings():
               foreground=[('selected', 'black')],
               )
 
+    entryPopup = None
+    def onDoubleClick(event):
+        global entryPopup
+        '''Executed, when a row is double-clicked'''
+        # close previous popups
+        try:  # in case there was no previous popup
+            entryPopup.destroy()
+        except:
+            pass
+
+        # what row and column was clicked on
+        rowid = table.identify_row(event.y)
+        column = table.identify_column(event.x)
+
+        # return if the header was double clicked
+        if not rowid:
+            return
+
+        # get cell position and cell dimensions
+        x, y, width, height = table.bbox(rowid, column)
+        print(x, y, width, height)
+
+        # y-axis offset
+        pady = height // 2
+
+        # place Entry Widget
+        text = table.item(rowid, 'values')[int(column[1:]) - 1]
+        entryPopup = EntryPopup(table, rowid, int(column[1:]) - 1, text, updateTable)
+        entryPopup.place(x=x, y=y + pady, width=width, height=height, anchor='w')
+        
     table = ttk.Treeview(settingsPage, columns=("Points", "Spec", "Min", "Max"), show="headings")
     table.heading('Points', text='Points')
     table.heading('Spec', text='Spec')
@@ -413,8 +527,21 @@ def settings():
     table.column("Min", width=75)
     table.column("Max", width=75)
 
+    table.bind("<Double-1>", onDoubleClick)
 
     table.place(relx=0.85, rely=0.6, anchor="center", height = 400)
+
+    def addRow(indix, spec=0, min=0, max=0):
+        part_number = partNumberTextBox.get("1.0", "end").strip()
+        print(indix)
+        table.insert("", "end", values=(f'{shapes[indix].name}_{indix}', str(spec), str(min), str(max)))
+
+    def popRow(i: int = -1):
+        print(len(table.get_children()) + i if i<0 else i)
+        print(i)
+        table.delete(table.get_children()[i])
+    def updateTable(idx, vals:list):
+        pass
 
     def saveData():
         # Retrieve values from textboxes
@@ -428,31 +555,40 @@ def settings():
             # Ensure all fields are filled before saving
             print("Please fill all fields before saving.")
             return
-        saved = messagebox.askokcancel("Continue", "Data saved successfully")
+        saved = messagebox.askokcancel("Continue", "Are you sure?")
         if saved:
             try:
                 # Convert part_number to int
                 part_number = int(part_number)
-                # Check if part_number already exists in the database
-                cursor.execute("SELECT partNumber FROM points WHERE partNumber=?", (part_number,))
+                # Check if part_numberx already exists in the database
+                cursor.execute("SELECT part_number FROM points WHERE part_number=?", (part_number,))
                 existing_part = cursor.fetchone()
                 if existing_part:
                     # If part_number exists, update the record
                     cursor.execute(
-                        "UPDATE points SET supplierName=?, vendorCode=?, partName=?, lotCount=? WHERE partNumber=?",
+                        "UPDATE points SET supplierName=?, vendorCode=?, partName=?, lotCount=? WHERE part_number=?",
                         (supplier_name, vendor_code, part_name, lot_count, part_number))
+
+                    cursor.execute("DELETE FROM shapes WHERE part_number=?", (part_number,))
+                    for shape_idx in range(len(shapes)):
+                        cursor.execute(
+                            "INSERT INTO shapes (spec, min, max, shape, shape_index, part_number) VALUES (?, ?, ?, ?, ?, ?)",
+                            (0, 0, 0, str(shapes[shape_idx]), shape_idx, part_number))
+                        print(shapes[shape_idx])
+
+                    connection.commit()
                 else:
                     # If part_number doesn't exist, insert a new record
                     cursor.execute(
-                        "INSERT INTO points (supplierName, vendorCode, partNumber, partName, lotCount) VALUES (?, ?, ?, ?, ?)",
+                        "INSERT INTO points (supplierName, vendorCode, part_number, partName, lotCount) VALUES (?, ?, ?, ?, ?)",
                         (supplier_name, vendor_code, part_number, part_name, lot_count))
 
                 # Commit the transaction
                 connection.commit()
                 print("Data saved successfully.")
 
-                # Update dropdown menu with new data
-                cursor.execute("""SELECT partNumber FROM points""")
+                # Update dropdown menu with new dataj
+                cursor.execute("""SELECT part_number FROM points""")
                 partNumbers = [x[0] for x in cursor.fetchall()]
                 points = ["Select P/N"] + [f"{x}" for x in partNumbers]
                 dropdown.configure(values=points)  # Update dropdown values
@@ -464,6 +600,9 @@ def settings():
             except sqlite3.Error as e:
                 print("Error occurred while saving data:", e)
 
+            for i in shapes:
+                print(i)
+
     def deleteData():
         # Get the selected part number from the dropdown menu
         selected_part = dropdown.get()
@@ -474,7 +613,7 @@ def settings():
             return
 
         # Extract the part number from the selected option
-        part_number = int(selected_part.split(" ")[1])
+        part_number = int(partNumberTextBox.get("1.0", "end").strip())
 
         # Ask for confirmation before deletion
         confirm = messagebox.askyesno("Confirmation", f"Do you want to delete Part {part_number}?")
@@ -482,14 +621,14 @@ def settings():
         if confirm:
             try:
                 # Execute the SQL DELETE statement to remove the record
-                cursor.execute("DELETE FROM points WHERE partNumber=?", (part_number,))
+                cursor.execute("DELETE FROM points WHERE part_number=?", (part_number,))
 
                 # Commit the transaction
                 connection.commit()
                 print("Data deleted successfully.")
 
                 # Update dropdown menu with updated data
-                cursor.execute("""SELECT partNumber FROM points""")
+                cursor.execute("""SELECT part_number FROM points""")
                 partNumbers = [x[0] for x in cursor.fetchall()]
                 points = ["Select P/N"] + [f"Part {x}" for x in partNumbers]
                 dropdown.configure(values=points)  # Update dropdown values
